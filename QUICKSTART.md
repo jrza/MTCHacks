@@ -14,15 +14,17 @@
    ```bash
    pip install -r requirements.txt
    ```
+   
+   Note: First run will download Hugging Face model (~250MB). Subsequent runs are fully offline.
 
-3. **Set up environment variables:**
+3. **Set up environment variables (optional):**
    ```bash
    cp .env.example .env
    ```
    
-   Edit `.env` and add your API keys:
+   Edit `.env` to add TMDb API key (optional):
    - Get a free TMDb API key at: https://www.themoviedb.org/settings/api
-   - (Optional) Add OpenAI API key for AI-powered summaries
+   - Without API key, app uses cached/default movie data
 
 4. **Run the application:**
    ```bash
@@ -35,15 +37,18 @@
    - Interactive docs: http://localhost:8000/docs
    - Alternative docs: http://localhost:8000/redoc
 
-### Testing Without API Keys
+### Running Fully Offline
 
-If you want to test the application without setting up API keys:
+The application runs completely offline with no API keys required:
 
 ```bash
 python demo.py
 ```
 
-This will run a demonstration of the theme analyzer and summary generator with mock movie data.
+This will run a demonstration using:
+- Open-source Hugging Face models (Flan-T5) for summaries
+- Default movie dataset (no API needed)
+- Keyword-based theme analysis
 
 ## For Deployment
 
@@ -59,10 +64,10 @@ This will run a demonstration of the theme analyzer and summary generator with m
    vercel
    ```
 
-3. **Set environment secrets:**
+3. **(Optional) Set environment secrets:**
    ```bash
    vercel env add TMDB_API_KEY
-   vercel env add OPENAI_API_KEY
+   vercel env add ALLOWED_ORIGINS
    ```
 
 ### Railway
@@ -78,9 +83,9 @@ This will run a demonstration of the theme analyzer and summary generator with m
    railway init
    ```
 
-3. **Add environment variables in Railway dashboard:**
-   - `TMDB_API_KEY`
-   - `OPENAI_API_KEY`
+3. **(Optional) Add environment variables in Railway dashboard:**
+   - `TMDB_API_KEY` - for fresh movie data
+   - `ALLOWED_ORIGINS` - for CORS security
 
 4. **Deploy:**
    ```bash
@@ -133,8 +138,11 @@ curl http://localhost:8000/health
 ```json
 {
   "status": "healthy",
-  "tmdb_configured": true,
-  "openai_configured": true
+  "tmdb_configured": false,
+  "model_info": {
+    "summary_model": "google/flan-t5-small",
+    "runs_offline": true
+  }
 }
 ```
 
@@ -163,16 +171,17 @@ curl http://localhost:8000/health
                      │
      ┌───────────────┼───────────────┐
      │               │               │
-┌────▼────┐   ┌──────▼─────┐  ┌────▼─────┐
-│ TMDb    │   │   Theme    │  │ Islamic  │
-│ Client  │   │  Analyzer  │  │ Summary  │
-│         │   │            │  │ Generator│
-└────┬────┘   └──────┬─────┘  └────┬─────┘
+┌────▼────┐   ┌──────▼─────┐  ┌────▼─────────┐
+│ TMDb    │   │   Theme    │  │ Hugging Face │
+│ Client  │   │  Analyzer  │  │  Summary     │
+│(Optional│   │            │  │ (Flan-T5)    │
+└────┬────┘   └──────┬─────┘  └────┬─────────┘
      │               │              │
      │        ┌──────▼──────────────▼─┐
      │        │    DataStore         │
      └────────►   (data_store.py)    │
               │   - JSON Storage     │
+              │   - Offline Fallback │
               └──────────────────────┘
 ```
 
@@ -180,9 +189,10 @@ curl http://localhost:8000/health
 
 1. **Modular Design**: Each component has a single responsibility
 2. **Simple Storage**: JSON files for easy debugging and portability
-3. **Graceful Degradation**: Works with or without OpenAI API key
+3. **Fully Offline**: Runs completely offline using Hugging Face models
 4. **Theme Analysis**: Keyword-based Islamic theme identification
 5. **Ready to Deploy**: Configured for Vercel and Railway
+6. **No API Keys Required**: Works out-of-the-box with default data
 
 ## Troubleshooting
 
@@ -195,10 +205,14 @@ pkill -f "python main.py"
 uvicorn main:app --port 8001
 ```
 
-### API Key Issues
-- Ensure `.env` file exists and contains valid keys
-- Check that keys don't have extra spaces or quotes
-- Verify TMDb API key at: https://www.themoviedb.org/settings/api
+### Model Download Issues
+- First run downloads ~250MB Flan-T5 model from Hugging Face
+- Ensure stable internet connection for initial download
+- Model is cached locally for offline use afterward
+
+### TMDb API (Optional)
+- App works without TMDb API key (uses cached/default data)
+- To use fresh movie data, get free key at: https://www.themoviedb.org/settings/api
 
 ### Dependencies
 ```bash
@@ -208,7 +222,8 @@ pip install -r requirements.txt --force-reinstall
 
 ## Next Steps
 
-1. **Get API Keys**: Sign up for TMDb (required) and OpenAI (optional)
+1. **Install Dependencies**: Run `pip install -r requirements.txt` (includes Hugging Face models)
 2. **Test Locally**: Run `python main.py` and visit http://localhost:8000/docs
-3. **Deploy**: Choose Vercel or Railway for instant deployment
+3. **(Optional) Get TMDb Key**: For fresh movie data, sign up at https://www.themoviedb.org
+4. **Deploy**: Choose Vercel or Railway for instant deployment
 4. **Customize**: Modify Islamic themes in `config.py` to match your preferences

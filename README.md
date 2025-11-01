@@ -7,8 +7,9 @@ A FastAPI-based backend service that recommends movies with Islamic-lens analysi
 - 🎬 **Movie Recommendations**: Get 3 curated movie recommendations
 - 🔄 **Refresh**: Reshuffle and get new recommendations
 - 🏷️ **Theme Tagging**: Automatically identify Islamic themes using keyword-based analysis
-- 📝 **Islamic-Lens Summaries**: AI-generated summaries highlighting moral and ethical values
+- 📝 **Islamic-Lens Summaries**: AI-generated summaries using open-source Hugging Face models (Flan-T5)
 - 💾 **JSON Storage**: Simple file-based storage for recommendations
+- 🌐 **Fully Offline**: Runs completely offline with no API keys required
 - 🚀 **Easy Deployment**: Ready for Vercel or Railway
 
 ## Architecture
@@ -17,9 +18,9 @@ The application consists of several modular components:
 
 - **main.py**: FastAPI application with endpoints
 - **recommendation_service.py**: Core recommendation logic
-- **tmdb_client.py**: TMDb API integration for movie data
+- **tmdb_client.py**: TMDb API integration (optional, with offline fallback)
 - **theme_analyzer.py**: Keyword-based theme identification
-- **islamic_summary.py**: OpenAI integration for Islamic-perspective summaries
+- **islamic_summary.py**: Hugging Face model integration for Islamic-perspective summaries
 - **data_store.py**: JSON-based data persistence
 - **config.py**: Configuration management
 
@@ -64,8 +65,7 @@ Health check endpoint.
 ### Prerequisites
 
 - Python 3.9+
-- TMDb API key (free at https://www.themoviedb.org/settings/api)
-- OpenAI API key (optional, for AI summaries)
+- TMDb API key (optional - for fresh movie data, free at https://www.themoviedb.org/settings/api)
 
 ### Installation
 
@@ -80,20 +80,22 @@ cd MTCHacks
 pip install -r requirements.txt
 ```
 
-3. **Set up environment variables:**
+Note: First run will download the Hugging Face model (~250MB). Subsequent runs are fully offline.
+
+3. **Set up environment variables (optional):**
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your API keys:
+Edit `.env` to add TMDb API key (optional):
 ```
 TMDB_API_KEY=your_tmdb_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
 ALLOWED_ORIGINS=*
 ```
 
 **Notes:** 
-- OpenAI API key is optional. If not provided, the app will use fallback summaries.
+- TMDb API key is optional. Without it, the app uses cached/default movie data.
+- The app runs completely offline using open-source Hugging Face models (Flan-T5).
 - For production, set `ALLOWED_ORIGINS` to specific domains (e.g., `https://yourdomain.com,https://app.yourdomain.com`).
 
 4. **Run the application:**
@@ -122,16 +124,16 @@ npm i -g vercel
 vercel
 ```
 
-3. Set environment variables in Vercel dashboard:
-   - `TMDB_API_KEY`
-   - `OPENAI_API_KEY`
+3. (Optional) Set environment variables in Vercel dashboard:
+   - `TMDB_API_KEY` - for fresh movie data
+   - `ALLOWED_ORIGINS` - for CORS security
 
 ### Railway
 
 1. Connect your GitHub repository to Railway
-2. Add environment variables in Railway dashboard:
-   - `TMDB_API_KEY`
-   - `OPENAI_API_KEY`
+2. (Optional) Add environment variables in Railway dashboard:
+   - `TMDB_API_KEY` - for fresh movie data
+   - `ALLOWED_ORIGINS` - for CORS security
 3. Deploy automatically from main branch
 
 ## Islamic Themes
@@ -152,9 +154,10 @@ The app identifies the following Islamic values and themes in movies:
 ## Technology Stack
 
 - **FastAPI**: Modern Python web framework
-- **TMDb API**: Movie data source
+- **TMDb API**: Movie data source (optional, with offline fallback)
 - **Keyword Analysis**: Theme identification using keyword matching
-- **OpenAI GPT-3.5**: Islamic-lens summary generation
+- **Hugging Face Transformers**: Flan-T5 model for Islamic-lens summary generation (fully offline)
+- **PyTorch**: ML framework for model inference
 - **JSON**: Data storage
 
 ## Project Structure
