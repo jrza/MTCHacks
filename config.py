@@ -19,9 +19,6 @@ DATA_FILE = "data/recommendations.json"
 MOVIES_CACHE_FILE = "data/movies_cache.json"
 NUM_RECOMMENDATIONS = 3
 
-# Sentence Transformer Model
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-
 # Islamic themes to search for
 ISLAMIC_THEMES = [
     "faith and spirituality",

@@ -6,7 +6,7 @@ A FastAPI-based backend service that recommends movies with Islamic-lens analysi
 
 - 🎬 **Movie Recommendations**: Get 3 curated movie recommendations
 - 🔄 **Refresh**: Reshuffle and get new recommendations
-- 🏷️ **Theme Tagging**: Automatically identify Islamic themes using sentence transformers
+- 🏷️ **Theme Tagging**: Automatically identify Islamic themes using keyword-based analysis
 - 📝 **Islamic-Lens Summaries**: AI-generated summaries highlighting moral and ethical values
 - 💾 **JSON Storage**: Simple file-based storage for recommendations
 - 🚀 **Easy Deployment**: Ready for Vercel or Railway
@@ -18,7 +18,7 @@ The application consists of several modular components:
 - **main.py**: FastAPI application with endpoints
 - **recommendation_service.py**: Core recommendation logic
 - **tmdb_client.py**: TMDb API integration for movie data
-- **theme_analyzer.py**: Sentence transformers for theme identification
+- **theme_analyzer.py**: Keyword-based theme identification
 - **islamic_summary.py**: OpenAI integration for Islamic-perspective summaries
 - **data_store.py**: JSON-based data persistence
 - **config.py**: Configuration management
@@ -150,7 +150,7 @@ The app identifies the following Islamic values and themes in movies:
 
 - **FastAPI**: Modern Python web framework
 - **TMDb API**: Movie data source
-- **sentence-transformers**: Theme identification
+- **Keyword Analysis**: Theme identification using keyword matching
 - **OpenAI GPT-3.5**: Islamic-lens summary generation
 - **JSON**: Data storage
 
