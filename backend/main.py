@@ -66,18 +66,15 @@ async def get_recommendations():
     Returns 3 movies with Islamic-lens analysis
     """
     try:
-        recommendations = recommendation_service.get_recommendations(refresh=False)
+        result = recommendation_service.get_recommendations(refresh=False)
         
-        if not recommendations:
+        if not result or not result.get("recommendations"):
             raise HTTPException(
                 status_code=500,
                 detail="Unable to fetch recommendations. Please check API configuration."
             )
         
-        return {
-            "recommendations": recommendations,
-            "count": len(recommendations)
-        }
+        return result
     
     except Exception as e:
         raise HTTPException(
@@ -93,18 +90,15 @@ async def refresh_recommendations():
     Returns 3 new movies with Islamic-lens analysis
     """
     try:
-        recommendations = recommendation_service.get_recommendations(refresh=True)
+        result = recommendation_service.get_recommendations(refresh=True)
         
-        if not recommendations:
+        if not result or not result.get("recommendations"):
             raise HTTPException(
                 status_code=500,
                 detail="Unable to fetch recommendations. Please check API configuration."
             )
         
-        return {
-            "recommendations": recommendations,
-            "count": len(recommendations)
-        }
+        return result
     
     except Exception as e:
         raise HTTPException(

@@ -4,7 +4,7 @@ Movie recommendation service
 from typing import List, Dict
 from tmdb_client import TMDbClient
 from theme_analyzer import ThemeAnalyzer
-from islamic_summary import IslamicSummaryGenerator
+from islamic_summary import generate_islamic_summary
 from data_store import DataStore
 import config
 
@@ -14,7 +14,6 @@ class RecommendationService:
     def __init__(self):
         self.tmdb = TMDbClient()
         self.theme_analyzer = ThemeAnalyzer()
-        self.summary_generator = IslamicSummaryGenerator()
         self.data_store = DataStore()
         self._movie_pool = []
     
@@ -132,8 +131,8 @@ class RecommendationService:
         # Analyze themes
         themes = self.theme_analyzer.get_top_themes(overview)
         
-        # Generate Islamic summary
-        islamic_summary = self.summary_generator.generate_summary(
+        # Generate Islamic summary using the function
+        islamic_summary = generate_islamic_summary(
             movie.get("title", ""),
             overview,
             themes
@@ -145,7 +144,7 @@ class RecommendationService:
         
         return movie
     
-    def get_recommendations(self, refresh: bool = False) -> List[Dict]:
+    def get_recommendations(self, refresh: bool = False) -> Dict:
         """
         Get movie recommendations
         
@@ -153,19 +152,45 @@ class RecommendationService:
             refresh: If True, fetch new recommendations
             
         Returns:
-            List of recommended movies
+            JSON dict with recommendations and count
         """
         # If refresh or no saved recommendations, generate new ones
         if refresh:
-            return self._generate_new_recommendations()
+            recommendations = self._generate_new_recommendations()
+            return {
+                "recommendations": recommendations,
+                "count": len(recommendations)
+            }
         
         # Try to load existing recommendations
         saved_data = self.data_store.load_recommendations()
         if saved_data and saved_data.get("recommendations"):
-            return saved_data["recommendations"]
+            recommendations = saved_data["recommendations"]
+            # Ensure all movies have islamic_summary
+            for movie in recommendations:
+                if "islamic_summary" not in movie:
+                    try:
+                        movie["islamic_summary"] = generate_islamic_summary(
+                            movie.get("title", ""),
+                            movie.get("overview", ""),
+                            movie.get("themes", [])
+                        )
+                    except Exception as e:
+                        print(f"Error generating Islamic summary: {e}")
+                        # Fallback template
+                        themes = movie.get("themes", [])
+                        movie["islamic_summary"] = f"'{movie.get('title', 'This film')}' reflects {', '.join(themes) if themes else 'universal values'} — valuable lessons for families."
+            return {
+                "recommendations": recommendations,
+                "count": len(recommendations)
+            }
         
         # Generate new if none exist
-        return self._generate_new_recommendations()
+        recommendations = self._generate_new_recommendations()
+        return {
+            "recommendations": recommendations,
+            "count": len(recommendations)
+        }
     
     def _generate_new_recommendations(self) -> List[Dict]:
         """Generate new movie recommendations"""
@@ -181,8 +206,29 @@ class RecommendationService:
             config.NUM_RECOMMENDATIONS
         )
         
-        # Enrich with themes and summaries
-        recommendations = [self._enrich_movie(movie.copy()) for movie in selected_movies]
+        # Loop through selected movies and add islamic_summary
+        recommendations = []
+        for movie in selected_movies:
+            movie_copy = movie.copy()
+            overview = movie_copy.get("overview", "")
+            
+            # Analyze themes
+            themes = self.theme_analyzer.get_top_themes(overview)
+            movie_copy["themes"] = themes
+            
+            # Add Islamic summary with error handling
+            try:
+                movie_copy["islamic_summary"] = generate_islamic_summary(
+                    movie_copy.get("title", ""),
+                    overview,
+                    themes
+                )
+            except Exception as e:
+                print(f"Error generating Islamic summary: {e}")
+                # Fallback template
+                movie_copy["islamic_summary"] = f"'{movie_copy['title']}' reflects {', '.join(themes) if themes else 'universal values'} — valuable lessons for families."
+            
+            recommendations.append(movie_copy)
         
         # Save recommendations
         self.data_store.save_recommendations(recommendations)
