@@ -89,9 +89,12 @@ Edit `.env` and add your API keys:
 ```
 TMDB_API_KEY=your_tmdb_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
+ALLOWED_ORIGINS=*
 ```
 
-Note: OpenAI API key is optional. If not provided, the app will use fallback summaries.
+**Notes:** 
+- OpenAI API key is optional. If not provided, the app will use fallback summaries.
+- For production, set `ALLOWED_ORIGINS` to specific domains (e.g., `https://yourdomain.com,https://app.yourdomain.com`).
 
 4. **Run the application:**
 ```bash

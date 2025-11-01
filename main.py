@@ -4,9 +4,10 @@ FastAPI application for Islamic Media Recommender
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from recommendation_service import RecommendationService
 import config
+import os
 
 app = FastAPI(
     title="Islamic Media Recommender API",
@@ -15,9 +16,11 @@ app = FastAPI(
 )
 
 # CORS middleware for frontend integration
+# For production, set ALLOWED_ORIGINS environment variable
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,8 +36,8 @@ class MovieRecommendation(BaseModel):
     overview: str
     release_date: str
     vote_average: float
-    poster_path: str | None
-    backdrop_path: str | None
+    poster_path: Optional[str]
+    backdrop_path: Optional[str]
     themes: List[str]
     islamic_summary: str
 
