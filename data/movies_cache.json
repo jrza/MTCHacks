@@ -1,0 +1,49 @@
+{
+  "movies": [
+    {
+      "id": 1,
+      "title": "The Pursuit of Happyness",
+      "overview": "A struggling salesman takes custody of his son as he's poised to begin a life-changing professional career. Based on a true story about a man's pursuit of success against all odds, showing perseverance, family bonds, and faith in difficult times.",
+      "release_date": "2006-12-15",
+      "vote_average": 8.0,
+      "poster_path": "https://image.tmdb.org/t/p/w500/example1.jpg",
+      "backdrop_path": "https://image.tmdb.org/t/p/w500/backdrop1.jpg"
+    },
+    {
+      "id": 2,
+      "title": "The Blind Side",
+      "overview": "The story of Michael Oher, a homeless and traumatized boy who became an All American football player with the help of a caring woman and her family. A powerful story of compassion, family, and community coming together.",
+      "release_date": "2009-11-20",
+      "vote_average": 7.7,
+      "poster_path": "https://image.tmdb.org/t/p/w500/example2.jpg",
+      "backdrop_path": "https://image.tmdb.org/t/p/w500/backdrop2.jpg"
+    },
+    {
+      "id": 3,
+      "title": "12 Angry Men",
+      "overview": "A jury holdout attempts to prevent a miscarriage of justice by forcing his colleagues to reconsider the evidence. A powerful examination of justice, truth, and standing up for what is right.",
+      "release_date": "1957-04-10",
+      "vote_average": 8.9,
+      "poster_path": "https://image.tmdb.org/t/p/w500/example3.jpg",
+      "backdrop_path": "https://image.tmdb.org/t/p/w500/backdrop3.jpg"
+    },
+    {
+      "id": 4,
+      "title": "Schindler's List",
+      "overview": "In German-occupied Poland during World War II, Oskar Schindler gradually becomes concerned for his Jewish workforce after witnessing their persecution by the Nazis. A profound story of sacrifice, courage, and saving lives.",
+      "release_date": "1993-12-15",
+      "vote_average": 8.9,
+      "poster_path": "https://image.tmdb.org/t/p/w500/example4.jpg",
+      "backdrop_path": "https://image.tmdb.org/t/p/w500/backdrop4.jpg"
+    },
+    {
+      "id": 5,
+      "title": "Life is Beautiful",
+      "overview": "When an open-minded Jewish librarian and his son become victims of the Holocaust, he uses humor and imagination to protect his son from the horrors. A touching story of love, sacrifice, and maintaining hope in dark times.",
+      "release_date": "1997-12-20",
+      "vote_average": 8.6,
+      "poster_path": "https://image.tmdb.org/t/p/w500/example5.jpg",
+      "backdrop_path": "https://image.tmdb.org/t/p/w500/backdrop5.jpg"
+    }
+  ]
+}
