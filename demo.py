@@ -78,9 +78,12 @@ def test_islamic_summary():
     
     movie = MOCK_MOVIES[0]
     themes = ["struggle and perseverance", "family values and relationships"]
-    summary = generator.generate_summary(movie['title'], movie['overview'], themes)
+    
     print(f"Movie: {movie['title']}")
     print(f"Themes: {themes}")
+    print("Generating summary (this may take a moment on first run)...")
+    
+    summary = generator.generate_summary(movie['title'], movie['overview'], themes)
     print(f"Islamic Summary: {summary}\n")
 
 def test_data_store():

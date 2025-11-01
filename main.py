@@ -118,7 +118,10 @@ async def health_check():
     return {
         "status": "healthy",
         "tmdb_configured": bool(config.TMDB_API_KEY),
-        "openai_configured": bool(config.OPENAI_API_KEY)
+        "model_info": {
+            "summary_model": config.SUMMARY_MODEL,
+            "runs_offline": True
+        }
     }
 
 if __name__ == "__main__":

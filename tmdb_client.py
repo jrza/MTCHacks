@@ -1,20 +1,28 @@
 """
-TMDb API client for fetching movie data
+TMDb API client for fetching movie data (with offline fallback)
 """
 import requests
 from typing import List, Dict, Optional
 import config
 
 class TMDbClient:
-    """Client for interacting with The Movie Database API"""
+    """Client for interacting with The Movie Database API (optional)"""
     
     def __init__(self):
         self.api_key = config.TMDB_API_KEY
         self.base_url = config.TMDB_BASE_URL
         self.image_base_url = config.TMDB_IMAGE_BASE_URL
+        self.api_available = bool(self.api_key)
+        
+        if not self.api_available:
+            print("TMDb API key not provided - will use cached data only")
     
     def search_movies(self, query: str, page: int = 1) -> List[Dict]:
-        """Search for movies by query"""
+        """Search for movies by query (returns empty list if API unavailable)"""
+        if not self.api_available:
+            print("TMDb API not available - search requires API key")
+            return []
+        
         url = f"{self.base_url}/search/movie"
         params = {
             "api_key": self.api_key,
@@ -29,11 +37,15 @@ class TMDbClient:
             data = response.json()
             return data.get("results", [])
         except Exception as e:
-            print(f"Error searching movies: {e}")
+            print(f"Error searching movies (falling back to cache): {e}")
             return []
     
     def get_popular_movies(self, page: int = 1) -> List[Dict]:
-        """Get popular movies"""
+        """Get popular movies (returns empty list if API unavailable)"""
+        if not self.api_available:
+            print("TMDb API not available - using cached data")
+            return []
+        
         url = f"{self.base_url}/movie/popular"
         params = {
             "api_key": self.api_key,
@@ -47,11 +59,14 @@ class TMDbClient:
             data = response.json()
             return data.get("results", [])
         except Exception as e:
-            print(f"Error fetching popular movies: {e}")
+            print(f"Error fetching popular movies (falling back to cache): {e}")
             return []
     
     def get_movie_details(self, movie_id: int) -> Optional[Dict]:
-        """Get detailed information about a specific movie"""
+        """Get detailed information about a specific movie (returns None if API unavailable)"""
+        if not self.api_available:
+            return None
+        
         url = f"{self.base_url}/movie/{movie_id}"
         params = {
             "api_key": self.api_key,
@@ -67,7 +82,11 @@ class TMDbClient:
             return None
     
     def get_top_rated_movies(self, page: int = 1) -> List[Dict]:
-        """Get top rated movies"""
+        """Get top rated movies (returns empty list if API unavailable)"""
+        if not self.api_available:
+            print("TMDb API not available - using cached data")
+            return []
+        
         url = f"{self.base_url}/movie/top_rated"
         params = {
             "api_key": self.api_key,
@@ -81,7 +100,7 @@ class TMDbClient:
             data = response.json()
             return data.get("results", [])
         except Exception as e:
-            print(f"Error fetching top rated movies: {e}")
+            print(f"Error fetching top rated movies (falling back to cache): {e}")
             return []
     
     def format_movie_data(self, movie: Dict) -> Dict:
