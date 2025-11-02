@@ -1,72 +1,81 @@
 """
-Movie recommendation service
+Movie recommendation service - simplified
 """
 from typing import List, Dict
-from tmdb_client import TMDbClient
 from theme_analyzer import ThemeAnalyzer
 from islamic_summary import generate_islamic_summary
 from data_store import DataStore
 import config
+import random
 
 class RecommendationService:
-    """Service for generating and managing movie recommendations"""
+    """Service for generating and managing movie/tv recommendations"""
     
     def __init__(self):
-        self.tmdb = TMDbClient()
         self.theme_analyzer = ThemeAnalyzer()
         self.data_store = DataStore()
-        self._movie_pool = []
     
-    def _fetch_movies(self) -> List[Dict]:
-        """Fetch movies from TMDb API or use cached data as fallback"""
-        # Try to load from cache first
-        cached_movies = self.data_store.load_movies_cache()
-        
-        # If TMDb API is available, try to fetch fresh movies
-        if self.tmdb.api_available:
-            # Fetch fresh movies
-            movies = []
-            
-            # Get top rated movies (tend to have better themes)
-            top_rated = self.tmdb.get_top_rated_movies(page=1)
-            movies.extend(top_rated[:10])
-            
-            # Get popular movies
-            popular = self.tmdb.get_popular_movies(page=1)
-            movies.extend(popular[:10])
-            
-            # Format and deduplicate
-            formatted_movies = []
-            seen_ids = set()
-            
-            for movie in movies:
-                if movie.get("id") not in seen_ids and movie.get("overview"):
-                    formatted_movies.append(self.tmdb.format_movie_data(movie))
-                    seen_ids.add(movie.get("id"))
-            
-            # Cache the movies if we got any
-            if formatted_movies:
-                self.data_store.save_movies_cache(formatted_movies)
-                return formatted_movies
-            
-            # If API call failed but we have cache, use it
-            if cached_movies:
-                print("TMDb API call failed, using cached data")
-                return cached_movies
-        else:
-            # TMDb API not available, use cached data
-            if cached_movies:
-                print("Using cached movie data (TMDb API not configured)")
-                return cached_movies
-            else:
-                # No cache and no API - use default movies
-                print("No cache available and TMDb API not configured - using default movies")
-                return self._get_default_movies()
-        
-        return []
+    def _get_default_tv_shows(self) -> List[Dict]:
+        """Return default TV shows"""
+        return [
+            {
+                "id": 101,
+                "title": "Planet Earth",
+                "overview": "A groundbreaking documentary series exploring the beauty and wonder of our natural world. Showcases the majesty of creation, environmental stewardship, and the interconnectedness of all living things.",
+                "release_date": "2006-03-05",
+                "vote_average": 9.3,
+                "poster_path": None,
+                "backdrop_path": None
+            },
+            {
+                "id": 102,
+                "title": "The Crown",
+                "overview": "Chronicles the life of Queen Elizabeth II and the political and personal events that shaped her reign. Explores themes of duty, responsibility, family, and moral leadership.",
+                "release_date": "2016-11-04",
+                "vote_average": 8.6,
+                "poster_path": None,
+                "backdrop_path": None
+            },
+            {
+                "id": 103,
+                "title": "Little House on the Prairie",
+                "overview": "A family living on a farm in the 1870s faces life's challenges with faith, love, and strong family values. Shows perseverance, community support, and moral integrity in difficult times.",
+                "release_date": "1974-09-11",
+                "vote_average": 8.1,
+                "poster_path": None,
+                "backdrop_path": None
+            },
+            {
+                "id": 104,
+                "title": "Avatar: The Last Airbender",
+                "overview": "A young boy destined to bring peace to a war-torn world must master the elements and face his destiny. Explores balance, justice, wisdom, and the importance of spiritual growth.",
+                "release_date": "2005-02-21",
+                "vote_average": 8.9,
+                "poster_path": None,
+                "backdrop_path": None
+            },
+            {
+                "id": 105,
+                "title": "Anne with an E",
+                "overview": "An orphan girl with a vivid imagination finds a home and family. A touching story of kindness, acceptance, resilience, and the power of community and belonging.",
+                "release_date": "2017-03-19",
+                "vote_average": 8.7,
+                "poster_path": None,
+                "backdrop_path": None
+            },
+            {
+                "id": 106,
+                "title": "Mr. Rogers' Neighborhood",
+                "overview": "Fred Rogers teaches children about kindness, empathy, and understanding through gentle lessons. Emphasizes compassion, patience, and treating others with respect and dignity.",
+                "release_date": "1968-02-19",
+                "vote_average": 8.5,
+                "poster_path": None,
+                "backdrop_path": None
+            }
+        ]
     
     def _get_default_movies(self) -> List[Dict]:
-        """Return a set of default movies when no API or cache is available"""
+        """Return default movies"""
         return [
             {
                 "id": 1,
@@ -125,112 +134,46 @@ class RecommendationService:
         ]
     
     def _enrich_movie(self, movie: Dict) -> Dict:
-        """Enrich movie data with themes and Islamic summary"""
+        """Add themes and Islamic summary to movie"""
         overview = movie.get("overview", "")
-        
-        # Analyze themes
         themes = self.theme_analyzer.get_top_themes(overview)
         
-        # Generate Islamic summary using the function
-        islamic_summary = generate_islamic_summary(
+        movie["themes"] = themes
+        movie["islamic_summary"] = generate_islamic_summary(
             movie.get("title", ""),
             overview,
             themes
         )
         
-        # Add enriched data
-        movie["themes"] = themes
-        movie["islamic_summary"] = islamic_summary
-        
         return movie
     
-    def get_recommendations(self, refresh: bool = False) -> Dict:
-        """
-        Get movie recommendations
+    def get_recommendations(self, content_type: str = "movie", refresh: bool = False) -> Dict:
+        """Get movie or tv recommendations"""
+        cache_key = f"{content_type}_recommendations"
         
-        Args:
-            refresh: If True, fetch new recommendations
-            
-        Returns:
-            JSON dict with recommendations and count
-        """
-        # If refresh or no saved recommendations, generate new ones
-        if refresh:
-            recommendations = self._generate_new_recommendations()
-            return {
-                "recommendations": recommendations,
-                "count": len(recommendations)
-            }
+        # Load cached if available and not refreshing
+        if not refresh:
+            saved = self.data_store.load_recommendations(cache_key)
+            if saved and saved.get("recommendations"):
+                return {
+                    "recommendations": saved["recommendations"],
+                    "count": len(saved["recommendations"])
+                }
         
-        # Try to load existing recommendations
-        saved_data = self.data_store.load_recommendations()
-        if saved_data and saved_data.get("recommendations"):
-            recommendations = saved_data["recommendations"]
-            # Ensure all movies have islamic_summary
-            for movie in recommendations:
-                if "islamic_summary" not in movie:
-                    try:
-                        movie["islamic_summary"] = generate_islamic_summary(
-                            movie.get("title", ""),
-                            movie.get("overview", ""),
-                            movie.get("themes", [])
-                        )
-                    except Exception as e:
-                        print(f"Error generating Islamic summary: {e}")
-                        # Fallback template
-                        themes = movie.get("themes", [])
-                        movie["islamic_summary"] = f"'{movie.get('title', 'This film')}' reflects {', '.join(themes) if themes else 'universal values'} — valuable lessons for families."
-            return {
-                "recommendations": recommendations,
-                "count": len(recommendations)
-            }
+        # Generate new recommendations
+        if content_type == "tv":
+            all_content = self._get_default_tv_shows()
+        else:
+            all_content = self._get_default_movies()
         
-        # Generate new if none exist
-        recommendations = self._generate_new_recommendations()
+        selected = random.sample(all_content, min(config.NUM_RECOMMENDATIONS, len(all_content)))
+        
+        recommendations = [self._enrich_movie(m.copy()) for m in selected]
+        
+        # Save for next time
+        self.data_store.save_recommendations(recommendations, cache_key)
+        
         return {
             "recommendations": recommendations,
             "count": len(recommendations)
         }
-    
-    def _generate_new_recommendations(self) -> List[Dict]:
-        """Generate new movie recommendations"""
-        # Fetch movie pool
-        self._movie_pool = self._fetch_movies()
-        
-        if not self._movie_pool:
-            return []
-        
-        # Select random movies
-        selected_movies = self.data_store.get_random_movies(
-            self._movie_pool,
-            config.NUM_RECOMMENDATIONS
-        )
-        
-        # Loop through selected movies and add islamic_summary
-        recommendations = []
-        for movie in selected_movies:
-            movie_copy = movie.copy()
-            overview = movie_copy.get("overview", "")
-            
-            # Analyze themes
-            themes = self.theme_analyzer.get_top_themes(overview)
-            movie_copy["themes"] = themes
-            
-            # Add Islamic summary with error handling
-            try:
-                movie_copy["islamic_summary"] = generate_islamic_summary(
-                    movie_copy.get("title", ""),
-                    overview,
-                    themes
-                )
-            except Exception as e:
-                print(f"Error generating Islamic summary: {e}")
-                # Fallback template
-                movie_copy["islamic_summary"] = f"'{movie_copy['title']}' reflects {', '.join(themes) if themes else 'universal values'} — valuable lessons for families."
-            
-            recommendations.append(movie_copy)
-        
-        # Save recommendations
-        self.data_store.save_recommendations(recommendations)
-        
-        return recommendations

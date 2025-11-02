@@ -21,24 +21,35 @@ class DataStore:
         if data_dir and not os.path.exists(data_dir):
             os.makedirs(data_dir, exist_ok=True)
     
-    def save_recommendations(self, recommendations: List[Dict]):
+    def save_recommendations(self, recommendations: List[Dict], cache_key: str = "movie_recommendations"):
         """Save current recommendations to file"""
-        data = {
+        # Load existing cache
+        all_cache = {}
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r', encoding='utf-8') as f:
+                    all_cache = json.load(f)
+            except:
+                pass
+        
+        # Update specific cache key
+        all_cache[cache_key] = {
             "recommendations": recommendations,
             "current_index": 0
         }
         
         with open(self.data_file, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(all_cache, f, indent=2, ensure_ascii=False)
     
-    def load_recommendations(self) -> Optional[Dict]:
+    def load_recommendations(self, cache_key: str = "movie_recommendations") -> Optional[Dict]:
         """Load recommendations from file"""
         if not os.path.exists(self.data_file):
             return None
         
         try:
             with open(self.data_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                all_cache = json.load(f)
+                return all_cache.get(cache_key)
         except Exception as e:
             print(f"Error loading recommendations: {e}")
             return None

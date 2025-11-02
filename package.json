@@ -1,0 +1,22 @@
+{
+  "name": "cinedeen",
+  "version": "1.0.0",
+  "description": "CineDeen - Islamic Media Recommender Fullstack App",
+  "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File start-simple.ps1",
+    "start:win": "powershell -ExecutionPolicy Bypass -File start-simple.ps1",
+    "start:unix": "bash start.sh",
+    "backend": "cd backend && py main.py",
+    "frontend": "cd frontend && npm start",
+    "install:all": "cd backend && py -m pip install fastapi uvicorn python-dotenv && cd ../frontend && npm install --legacy-peer-deps"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "fastapi",
+    "islamic-media"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
