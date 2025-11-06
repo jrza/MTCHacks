@@ -1,3 +1,5 @@
+hello mohammed
+
 # CineDeen - Islamic Media Recommender
 
 Unified fullstack app for recommending movies with Islamic-lens analysis.
